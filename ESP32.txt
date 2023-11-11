@@ -1,0 +1,26 @@
+#include <Arduino.h>
+#include <Temperature_LM75_Derived.h>
+
+#define RXp2 16
+#define TXp2 17
+
+Generic_LM75 LM75;
+
+void setup() {
+  Serial.begin(115200);    // Comunicacion UART COMPUTADORA
+  Serial2.begin(115200, SERIAL_8N1, RXp2, TXp2);   // UART CON TIVA C 
+  Wire.begin();
+  
+}
+
+void loop() {
+  float temperature = LM75.readTemperatureC();  // Lee la temperatura del sensor
+
+
+  // Envía la temperatura por Serial2 a la TIVA C
+  Serial2.print("Temperature=");
+  Serial2.println(temperature);
+  Serial2.println(" C");
+
+  delay(5000);
+}
