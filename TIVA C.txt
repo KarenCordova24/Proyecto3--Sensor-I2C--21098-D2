@@ -1,0 +1,31 @@
+void loop() {
+  int push1State = digitalRead(push1Pin);   // Lee el estado del botón 1
+
+  if (push1State == LOW) { // Si el botón 1 está presionado y hay datos disponibles en Serial2
+    if (Serial2.available()) {
+      tempe = Serial2.parseFloat(); // Lee y almacena los datos enviados por el ESP32
+      Serial.print("Temperatura: ");
+      Serial.println(tempe);
+      delay(500);   
+    } 
+  }
+
+  int push2State = digitalRead(push2Pin);  //al presionar el btn 2 guarda el valor BPM, enviado por el ESP32
+  if (push2State == LOW) {
+    Mediciones = SD.open("tempi.txt", FILE_WRITE);  //lo pone en modo escritura
+    if (Mediciones) {
+      Mediciones.println(tempe); //guarda el dato en la micro SD 
+      Mediciones.close(); //cierra el archivo
+      Serial.println("Toma de latidos guardada correctamente la temperatura");
+      delay(500);
+      
+      
+      
+      } else {
+        Serial.println("No se encontró el archivo para escritura.");
+      }
+    }
+
+  
+}
+
