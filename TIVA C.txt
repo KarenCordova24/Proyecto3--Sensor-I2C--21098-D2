@@ -1,3 +1,6 @@
+//***************************************************************************************************************************************
+// Loop Infinito
+//***************************************************************************************************************************************
 void loop() {
   int push1State = digitalRead(push1Pin);   // Lee el estado del botón 1
 
@@ -24,9 +27,10 @@ void loop() {
       } else {
         Serial.println("No se encontró el archivo para escritura.");
       }
+      Serial2.write('2');
+      Serial.println("Efecto 2 activado");
     }
     /*LCD_Sprite(15, 42, 128, 128, tempo, 5, anim2, 0, 1);   //animacion de un corazon como un GIF
     anim2 = (anim2 + 1) % 5;*/
   
 }
-

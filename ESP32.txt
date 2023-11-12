@@ -22,11 +22,13 @@ void neore();
 Adafruit_NeoPixel strip = Adafruit_NeoPixel(NUM_LEDS, LED_PIN, NEO_GRB + NEO_KHZ800);
 
 // Variable para indicar si el efecto debe estar activo
-bool neopixelEffectActive = false;
+bool neopixelEffectActive1 = false;
+bool neopixelEffectActive2 = false;
 
 // Prototipos de funciones
 void setupNeopixel();
-void loopNeopixel();
+void loopNeopixel1();
+void loopNeopixel2();
 void processCommand(const String &command);
 
 void setup() {
@@ -42,8 +44,11 @@ void loop() {
   sensor();
   neore();
   // Lógica del Neopixel solo si el efecto está activo
-  if (neopixelEffectActive) {
-    loopNeopixel();
+  if (neopixelEffectActive1) {
+    loopNeopixel1();
+  }
+  else{ 
+     loopNeopixel2();
   }
 }
 
@@ -61,11 +66,16 @@ void sensor() {
 void processCommand(const String &command) {
   // Procesar el comando recibido
   if (command == "1") {
-    neopixelEffectActive = true;
+    neopixelEffectActive1 = true;
     Serial.println("Neopixel effect activated");
   } else if (command == "0") {
-    neopixelEffectActive = false;
+    neopixelEffectActive1 = false;
     Serial.println("Neopixel effect deactivated");
+  }
+  else if(command =="2"){
+    neopixelEffectActive2 = true;
+    Serial.println("Button 2 prerssed");
+   
   }
 }
 
@@ -79,11 +89,11 @@ void setupNeopixel() {
 }
 
 // La lógica del efecto NeoPixel aquí
-void loopNeopixel() {
+void loopNeopixel1() {
   uint8_t purple = 255;
 
   // Si el efecto está activo
-  if (neopixelEffectActive) {
+  if (neopixelEffectActive1) {
     // Hacer que los colores cambien mientras recorremos el círculo
     for (int i = 0; i < NUM_LEDS; i++) {
       strip.setPixelColor(i, purple, 0, purple);
@@ -96,12 +106,30 @@ void loopNeopixel() {
     strip.show();
 
     // Reiniciar neopixelEffectActive para permitir que el efecto se ejecute nuevamente
-    neopixelEffectActive = false;
+    neopixelEffectActive1 = false;
   }
 }
 
+void loopNeopixel2() {
+  uint8_t blue = 255;
 
+  // Si el efecto está activo
+  if (neopixelEffectActive2) {
+    // Hacer que los colores cambien mientras recorremos el círculo
+    for (int i = 0; i < NUM_LEDS; i++) {
+      strip.setPixelColor(i, 0, 0, 200 );
+      strip.show();
+      delay(40);
+    }
 
+    // Limpiar los LEDs del círculo
+    strip.clear();
+    strip.show();
+
+    // Reiniciar neopixelEffectActive para permitir que el efecto se ejecute nuevamente
+    neopixelEffectActive2 = false;
+  }
+}
 
 void neore(){
    // Verificar si hay comandos disponibles en la UART
