@@ -1,6 +1,3 @@
-//***************************************************************************************************************************************
-// Inicialización
-//***************************************************************************************************************************************
 void setup() {
   SysCtlClockSet(SYSCTL_SYSDIV_2_5|SYSCTL_USE_PLL|SYSCTL_OSC_MAIN|SYSCTL_XTAL_16MHZ);
   Serial.begin(9600);
@@ -21,13 +18,13 @@ void setup() {
   }
   Serial.println("¡Inicialización completa!");
 
-  FillRect(0,0, 319, 43,  0xBABA);   //EJE X: , EYE Y,TAMAÑO X, TAMAÑO Y (ACOSTADO) FONDO  TÍTULO
+  FillRect(0,0, 319, 43,  0x2595);   //EJE X: , EYE Y,TAMAÑO X, TAMAÑO Y (ACOSTADO) FONDO  TÍTULO
   FillRect(0,44, 319, 170,0xFFFF);   //EJE X: , EYE Y,TAMAÑO X, TAMAÑO Y (ACOSTADO) FONDO  MEDIO
-  FillRect(0,170, 319, 45,  0xBABA);   //EJE X: , EYE Y,TAMAÑO X, TAMAÑO Y (ACOSTADO) FONDO  BAJO
+  FillRect(0,170, 319, 45,  0x2595);   //EJE X: , EYE Y,TAMAÑO X, TAMAÑO Y (ACOSTADO) FONDO  BAJO
   String text1 = "TEMPERATURA";
-  LCD_Print(text1, 80, 15, 2, 0xC0B0, 0xDD1B); //EJE X: , EYE Y...COLOR LETRA, COLOR FONDO (ACOSTADO) TITULO1
+  LCD_Print(text1, 80, 15, 2, 0x0451, 0x6675); //EJE X: , EYE Y...COLOR LETRA, COLOR FONDO (ACOSTADO) TITULO1
   String text2 = "KAREN CORDOVA";
-  LCD_Print(text2, 50, 190, 2, 0xC0B0, 0xDD1B); //EJE X: , EYE Y...COLOR LETRA, COLOR FONDO (ACOSTADO) TITULO 2
+  LCD_Print(text2, 50, 190, 2, 0x0451, 0x6675); //EJE X: , EYE Y...COLOR LETRA, COLOR FONDO (ACOSTADO) TITULO 2
   
  }
   
@@ -40,15 +37,15 @@ void loop() {
   if (push1State == LOW) {
   // Si el botón 1 está presionado y hay datos disponibles en Serial2
   if (Serial2.available()) {
-    Serial2.write('1');
+    Serial2.write('1');  //Envia el comanndo 1 para activar el efecto1 del neopixel
     Serial.println("Efecto 1 activado");
     tempe = Serial2.parseFloat(); // Lee y almacena los datos enviados por el ESP32
-    Serial.print("Temperatura: ");
-    Serial.println(tempe);
+    Serial2.print("Temperatura: ");  //envía el mensaje al ESP32
+    Serial2.println(tempe); //envía el mensaje al ESP32
     delay(500);
 
     // Convertir la temperatura a entero y decimal
-    int tempEntero = static_cast<int>(tempe);
+    int tempEntero = static_cast<int>(tempe); //variable del numero entero
     int tempDecimal = static_cast<int>((tempe - tempEntero) * 100); // Multiplicamos por 100 para obtener dos decimales
 
     // Imprime en la LCD usando la función original
@@ -65,15 +62,10 @@ void loop() {
   }
 }
 
-  
-
-
-  
-
   int push2State = digitalRead(push2Pin);  //al presionar el btn 2 guarda el valor BPM, enviado por el ESP32
   
   if (push2State == LOW) {
-    Mediciones = SD.open("teno.txt", FILE_WRITE);  //lo pone en modo escritura
+    Mediciones = SD.open("medic.txt", FILE_WRITE);  //lo pone en modo escritura
     if (Mediciones) {
       Mediciones.println(tempe); //guarda el dato en la micro SD 
       Mediciones.close(); //cierra el archivo
@@ -82,14 +74,14 @@ void loop() {
       } else {
         Serial.println("No se encontró el archivo para escritura.");
       }
-      Serial2.write('2');
+      Serial2.write('2');  //Envia el comanndo 2 para activar el efecto2 del neopixel
       Serial.println("Efecto 2 activado");
     }
    if(tempe<23.6){
-         LCD_Sprite(15, 42, 128, 106, tempo, 4, anim2, 0, 1);   //animacion de un corazon como un GIF
+         LCD_Sprite(15, 42, 128, 106, tempo, 4, anim2, 0, 1);   //animacion1  como un GIF
          anim2 = (anim2 + 1) % 4;
         }else{
-          LCD_Sprite(15, 42, 128, 128, temo, 4, anim2, 0, 1);   //animacion de un corazon como un GIF
+          LCD_Sprite(15, 42, 128, 128, temo, 4, anim2, 0, 1);   //animacion2 como un GIF
          anim2 = (anim2 + 1) % 4;
           }
   
