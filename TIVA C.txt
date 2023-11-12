@@ -1,24 +1,79 @@
 //***************************************************************************************************************************************
+// Inicialización
+//***************************************************************************************************************************************
+void setup() {
+  SysCtlClockSet(SYSCTL_SYSDIV_2_5|SYSCTL_USE_PLL|SYSCTL_OSC_MAIN|SYSCTL_XTAL_16MHZ);
+  Serial.begin(9600);
+  GPIOPadConfigSet(GPIO_PORTB_BASE, 0 | 1 | 2 | 3 | 4 | 5 | 6 | 7, GPIO_STRENGTH_8MA, GPIO_PIN_TYPE_STD_WPU);
+  Serial.println("Inicio");
+  LCD_Init();
+  LCD_Clear(0x00);
+  Serial.begin(115200);  //UART COMPUTADORA 
+  Serial2.begin(115200); //UART ESP32 
+  
+  pinMode(push1Pin, INPUT_PULLUP);  
+  pinMode(push2Pin, INPUT_PULLUP);
+  SPI.setModule(0);
+    
+   if (!SD.begin(12)) {
+    Serial.println("¡Inicialización fallida!");
+    return;
+  }
+  Serial.println("¡Inicialización completa!");
+
+  FillRect(0,0, 319, 43,  0xBABA);   //EJE X: , EYE Y,TAMAÑO X, TAMAÑO Y (ACOSTADO) FONDO  TÍTULO
+  FillRect(0,44, 319, 170,0xFFFF);   //EJE X: , EYE Y,TAMAÑO X, TAMAÑO Y (ACOSTADO) FONDO  MEDIO
+  FillRect(0,170, 319, 45,  0xBABA);   //EJE X: , EYE Y,TAMAÑO X, TAMAÑO Y (ACOSTADO) FONDO  BAJO
+  String text1 = "TEMPERATURA";
+  LCD_Print(text1, 80, 15, 2, 0xC0B0, 0xDD1B); //EJE X: , EYE Y...COLOR LETRA, COLOR FONDO (ACOSTADO) TITULO1
+  String text2 = "KAREN CORDOVA";
+  LCD_Print(text2, 50, 190, 2, 0xC0B0, 0xDD1B); //EJE X: , EYE Y...COLOR LETRA, COLOR FONDO (ACOSTADO) TITULO 2
+  
+ }
+  
+
+//***************************************************************************************************************************************
 // Loop Infinito
 //***************************************************************************************************************************************
 void loop() {
   int push1State = digitalRead(push1Pin);   // Lee el estado del botón 1
+  if (push1State == LOW) {
+  // Si el botón 1 está presionado y hay datos disponibles en Serial2
+  if (Serial2.available()) {
+    Serial2.write('1');
+    Serial.println("Efecto 1 activado");
+    tempe = Serial2.parseFloat(); // Lee y almacena los datos enviados por el ESP32
+    Serial.print("Temperatura: ");
+    Serial.println(tempe);
+    delay(500);
 
-  if (push1State == LOW) { // Si el botón 1 está presionado y hay datos disponibles en Serial2
-    if (Serial2.available()) {
-      Serial2.write('1');
-      Serial.println("Efecto 1 activado");
-      tempe = Serial2.parseFloat(); // Lee y almacena los datos enviados por el ESP32
-      Serial.print("Temperatura: ");
-      Serial.println(tempe);
-      delay(500);   
-    } 
+    // Convertir la temperatura a entero y decimal
+    int tempEntero = static_cast<int>(tempe);
+    int tempDecimal = static_cast<int>((tempe - tempEntero) * 100); // Multiplicamos por 100 para obtener dos decimales
+
+    // Imprime en la LCD usando la función original
+    LCD_Print("TEMP:", 140, 110, 2, 0x801F, 0x9CDF); 
+
+    // Imprime la parte entera de la temperatura
+    LCD_Print(String(tempEntero), 220, 110, 2, 0x801F, 0x9CDF);
+
+    // Concatena el punto decimal
+    LCD_Print(".", 250, 110, 2, 0x801F, 0x9CDF);
+
+    // Imprime la parte decimal de la temperatura
+    LCD_Print(String(tempDecimal), 266, 110, 2, 0x801F, 0x9CDF);
   }
+}
+
+  
+
+
+  
 
   int push2State = digitalRead(push2Pin);  //al presionar el btn 2 guarda el valor BPM, enviado por el ESP32
   
   if (push2State == LOW) {
-    Mediciones = SD.open("tempi.txt", FILE_WRITE);  //lo pone en modo escritura
+    Mediciones = SD.open("teno.txt", FILE_WRITE);  //lo pone en modo escritura
     if (Mediciones) {
       Mediciones.println(tempe); //guarda el dato en la micro SD 
       Mediciones.close(); //cierra el archivo
@@ -30,7 +85,12 @@ void loop() {
       Serial2.write('2');
       Serial.println("Efecto 2 activado");
     }
-    /*LCD_Sprite(15, 42, 128, 128, tempo, 5, anim2, 0, 1);   //animacion de un corazon como un GIF
-    anim2 = (anim2 + 1) % 5;*/
+   if(tempe<23.6){
+         LCD_Sprite(15, 42, 128, 106, tempo, 4, anim2, 0, 1);   //animacion de un corazon como un GIF
+         anim2 = (anim2 + 1) % 4;
+        }else{
+          LCD_Sprite(15, 42, 128, 128, temo, 4, anim2, 0, 1);   //animacion de un corazon como un GIF
+         anim2 = (anim2 + 1) % 4;
+          }
   
 }
