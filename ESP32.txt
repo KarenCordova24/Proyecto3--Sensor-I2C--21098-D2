@@ -1,28 +1,54 @@
 #include <Arduino.h>
 #include <Temperature_LM75_Derived.h>
+#include <Adafruit_NeoPixel.h>
 
+// Pin al que están conectados los LEDs
+#define LED_PIN 23
 #define RXp2 16
 #define TXp2 17
 
 Generic_LM75 LM75;
 
 void sensor();
+void neore();
+
+// Número de LEDs en el anillo
+#define NUM_LEDS 12
+
+// Brillo de los LEDs (0 a 255)
+#define BRIGHTNESS 75
+
+// Declaración del objeto NeoPixel
+Adafruit_NeoPixel strip = Adafruit_NeoPixel(NUM_LEDS, LED_PIN, NEO_GRB + NEO_KHZ800);
+
+// Variable para indicar si el efecto debe estar activo
+bool neopixelEffectActive = false;
+
+// Prototipos de funciones
+void setupNeopixel();
+void loopNeopixel();
+void processCommand(const String &command);
 
 void setup() {
   Serial.begin(115200);    // Comunicacion UART COMPUTADORA
   Serial2.begin(115200, SERIAL_8N1, RXp2, TXp2);   // UART CON TIVA C 
   Wire.begin();
-  
+
+  // Inicializar el Neopixel
+  setupNeopixel();
 }
 
 void loop() {
-  
   sensor();
+  neore();
+  // Lógica del Neopixel solo si el efecto está activo
+  if (neopixelEffectActive) {
+    loopNeopixel();
+  }
 }
 
-void sensor(){
-float temperature = LM75.readTemperatureC();  // Lee la temperatura del sensor
-
+void sensor() {
+  float temperature = LM75.readTemperatureC();  // Lee la temperatura del sensor
 
   // Envía la temperatura por Serial2 a la TIVA C
   Serial2.print("Temperature=");
@@ -30,5 +56,59 @@ float temperature = LM75.readTemperatureC();  // Lee la temperatura del sensor
   Serial2.println(" C");
 
   delay(5000);
+}
 
+void processCommand(const String &command) {
+  // Procesar el comando recibido
+  if (command == "1") {
+    neopixelEffectActive = true;
+    Serial.println("Neopixel effect activated");
+  } else if (command == "0") {
+    neopixelEffectActive = false;
+    Serial.println("Neopixel effect deactivated");
+  }
+}
+
+void setupNeopixel() {
+  // Inicializar el objeto NeoPixel
+  strip.begin();
+  strip.clear();
+  strip.setBrightness(BRIGHTNESS);
+
+  Serial.println("Setup del Neopixel completado");
+}
+
+// La lógica del efecto NeoPixel aquí
+void loopNeopixel() {
+  uint8_t purple = 255;
+
+  // Si el efecto está activo
+  if (neopixelEffectActive) {
+    // Hacer que los colores cambien mientras recorremos el círculo
+    for (int i = 0; i < NUM_LEDS; i++) {
+      strip.setPixelColor(i, purple, 0, purple);
+      strip.show();
+      delay(40);
+    }
+
+    // Limpiar los LEDs del círculo
+    strip.clear();
+    strip.show();
+
+    // Reiniciar neopixelEffectActive para permitir que el efecto se ejecute nuevamente
+    neopixelEffectActive = false;
+  }
+}
+
+
+
+
+void neore(){
+   // Verificar si hay comandos disponibles en la UART
+  while (Serial2.available() > 0) {
+    char commandChar = Serial2.read();
+    // Convertir el comando a String para facilitar su procesamiento
+    String command = String(commandChar);
+    processCommand(command);
+  }
 }
